@@ -1,30 +1,28 @@
 package soft.divan.world.chill.scuring_homework_otus
 
+import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.Column
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.fragment.app.FragmentActivity
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import androidx.security.crypto.MasterKey
 import soft.divan.world.chill.scuring_homework_otus.storage.PreferencesUtils
 import soft.divan.world.chill.scuring_homework_otus.crypto.Keys
 import soft.divan.world.chill.scuring_homework_otus.crypto.Security
 import soft.divan.world.chill.scuring_homework_otus.ui.theme.Scuring_homework_otusTheme
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
+
+
+    @RequiresApi(Build.VERSION_CODES.P)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         val secure = Security()
@@ -36,57 +34,34 @@ class MainActivity : ComponentActivity() {
         setContent {
             Scuring_homework_otusTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    MainScreen(
-                        secure = secure,
-                        key = keys,
-                        preferences = preferences,
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                    val navController = rememberNavController()
+                    NavHost(
+                        navController = navController,
+                        startDestination = "auth",
+
+                        ) {
+                        composable("auth") {
+                            AuthenticationScreen(
+                                preferences = preferences,
+                                onAuthSuccess = {
+                                    navController.navigate("main_screen") {
+                                        popUpTo("auth") { inclusive = true }
+                                    }
+                                }
+                            )
+                        }
+
+                        composable("main_screen") {
+                            MainScreen(
+                                secure = secure,
+                                key = keys,
+                                preferences = preferences,
+                                modifier = Modifier.padding(innerPadding)
+                            )
+                        }
+                    }
                 }
             }
         }
-
-
-    }
-}
-
-@Composable
-fun MainScreen(
-    secure: Security,
-    key: Keys,
-    preferences: PreferencesUtils,
-    modifier: Modifier = Modifier
-) {
-    var inputValue by remember { mutableStateOf("") }
-    Column() {
-        TextField(
-            value = inputValue,
-            onValueChange = { inputValue = it },
-            modifier = modifier
-        )
-
-        Button(onClick = {
-            preferences.set("key", secure.encryptAes(inputValue, key.getAesSecretKey()))
-
-
-        }) {
-            Text(text = "Set")
-        }
-
-        Button(onClick = {
-            inputValue = secure.decryptAes(preferences.get("key"), key.getAesSecretKey())
-        }) {
-            Text(text = "Get")
-        }
-
-    }
-
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    Scuring_homework_otusTheme {
-
     }
 }
