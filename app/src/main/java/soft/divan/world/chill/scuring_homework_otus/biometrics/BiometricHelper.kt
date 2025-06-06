@@ -1,4 +1,4 @@
-package soft.divan.world.chill.scuring_homework_otus
+package soft.divan.world.chill.scuring_homework_otus.biometrics
 
 import android.content.Context
 import androidx.biometric.BiometricManager

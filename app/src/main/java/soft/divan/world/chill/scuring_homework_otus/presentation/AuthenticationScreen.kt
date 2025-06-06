@@ -1,4 +1,4 @@
-package soft.divan.world.chill.scuring_homework_otus
+package soft.divan.world.chill.scuring_homework_otus.presentation
 
 import android.content.Context
 import android.widget.Toast
@@ -14,6 +14,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
@@ -21,8 +23,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.fragment.app.FragmentActivity
-import soft.divan.world.chill.scuring_homework_otus.storage.PreferencesUtils
-
+import soft.divan.world.chill.scuring_homework_otus.biometrics.BiometricHelper
+import soft.divan.world.chill.scuring_homework_otus.data.storage.PreferencesUtils
 
 @Composable
 fun AuthenticationScreen(
@@ -34,9 +36,14 @@ fun AuthenticationScreen(
     val password = remember { mutableStateOf("") }
     val biometricHelper = BiometricHelper(LocalContext.current as FragmentActivity)
 
-    LaunchedEffect(Unit) {
-        if (preferences.getBoolean("biometric"))
+    // Подписываемся на booleanDataFlow
+    val biometricEnabled by preferences.booleanDataFlow.collectAsState(initial = false)
+
+    // Если biometric включен — показываем биометрию 1 раз при входе
+    LaunchedEffect(biometricEnabled) {
+        if (biometricEnabled == true) {
             showBiometricPrompt(biometricHelper, onAuthSuccess, context)
+        }
     }
 
     Column(
@@ -66,11 +73,11 @@ fun AuthenticationScreen(
 
         Button(
             onClick = {
-                if (email.value == "otus@test.com" && password.value == "otus")
+                if (email.value == "otus@test.com" && password.value == "otus") {
                     onAuthSuccess()
-                else
-                    Toast.makeText(context, "Не правильный логин или пароль", Toast.LENGTH_SHORT).show()
-
+                } else {
+                    Toast.makeText(context, "Неправильный логин или пароль", Toast.LENGTH_SHORT).show()
+                }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
@@ -79,7 +86,7 @@ fun AuthenticationScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (preferences.getBoolean("biometric")) {
+        if (biometricEnabled == true) {
             Button(
                 onClick = {
                     showBiometricPrompt(biometricHelper, onAuthSuccess, context)
@@ -89,11 +96,8 @@ fun AuthenticationScreen(
                 Text("Войти через биометрию")
             }
         }
-
     }
 }
-
-
 private fun showBiometricPrompt(
     biometricHelper: BiometricHelper,
     onAuthSuccess: () -> Unit,

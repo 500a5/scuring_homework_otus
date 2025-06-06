@@ -1,4 +1,4 @@
-package soft.divan.world.chill.scuring_homework_otus
+package soft.divan.world.chill.scuring_homework_otus.presentation
 
 import android.os.Build
 import android.os.Bundle
@@ -13,33 +13,34 @@ import androidx.fragment.app.FragmentActivity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.security.crypto.MasterKey
-import soft.divan.world.chill.scuring_homework_otus.storage.PreferencesUtils
-import soft.divan.world.chill.scuring_homework_otus.crypto.Keys
-import soft.divan.world.chill.scuring_homework_otus.crypto.Security
-import soft.divan.world.chill.scuring_homework_otus.ui.theme.Scuring_homework_otusTheme
+import dagger.hilt.android.AndroidEntryPoint
+import soft.divan.world.chill.scuring_homework_otus.data.storage.PreferencesUtils
 
+import soft.divan.world.chill.scuring_homework_otus.ui.theme.Scuring_homework_otusTheme
+import javax.inject.Inject
+
+
+@AndroidEntryPoint
 class MainActivity : FragmentActivity() {
 
+    @Inject
+    lateinit var preferences: PreferencesUtils
 
-    @RequiresApi(Build.VERSION_CODES.P)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val secure = Security()
-        val keys = Keys(applicationContext)
-        val masterKey = keys.getMasterKey(MasterKey.KeyScheme.AES256_GCM)
-        val preferences = PreferencesUtils(applicationContext, masterKey)
 
         enableEdgeToEdge()
+
         setContent {
             Scuring_homework_otusTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     val navController = rememberNavController()
+
                     NavHost(
                         navController = navController,
                         startDestination = "auth",
-
-                        ) {
+                    ) {
                         composable("auth") {
                             AuthenticationScreen(
                                 preferences = preferences,
@@ -53,8 +54,6 @@ class MainActivity : FragmentActivity() {
 
                         composable("main_screen") {
                             MainScreen(
-                                secure = secure,
-                                key = keys,
                                 preferences = preferences,
                                 modifier = Modifier.padding(innerPadding)
                             )

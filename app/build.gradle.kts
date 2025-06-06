@@ -2,6 +2,8 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    id("kotlin-kapt")
+    id("com.google.dagger.hilt.android")
 }
 
 android {
@@ -61,6 +63,7 @@ dependencies {
     implementation  (libs.androidx.datastore.core)
     implementation(libs.androidx.biometric)
     implementation("androidx.navigation:navigation-compose:2.7.7")
-
-
+    kapt("androidx.hilt:hilt-compiler:1.2.0")
+    kapt("com.google.dagger:hilt-android-compiler:2.51.1")
+    implementation("com.google.dagger:hilt-android:2.51.1")
 }
